@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: no-buildpacks-test-pipeline-4
+spec:
+  params:
+    - name: image
+      type: string
+      description: image URL to push
+  workspaces:
+    - name: source-workspace # Directory where application source is located. (REQUIRED)
+      #- name: config-workspace # Directory where configuration is located. (REQUIRED)
+    - name: cache-workspace # Directory where cache is stored (OPTIONAL)
+    - name: basic-auth
+  tasks:
+    - name: fetch-config-repository # This task fetches the config repository from github
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: source-workspace
+          subPath: config-repo
+      params:
+        - name: url
+          value: https://github.com/nikogianna/tekton-test-config
+        - name: subdirectory
+          value: ""
+        - name: deleteExisting
+          value: "true" 
+          #. name: edit-config
+          #  runAfter: 
+          #    - fetch-config-repository
+          #  taskRef:
+          #    name: edit-config 
+          #  workspaces:
+          #    - name: config-dir
+          #      workspace: source-workspace
+          #      subPath: config-repo
+    - name: push-to-config
+      runAfter:
+        - fetch-config-repository
+      taskRef:
+        name: git-cli
+      workspaces:
+        - name: source
+          workspace: source-workspace
+          subPath: config-repo
+        - name: basic-auth
+          workspace: basic-auth
+      params:
+        - name: GIT_USER_NAME
+          value: nikogianna
+        - name: GIT_USER_EMAIL
+          value: nikogianna19@gmail.com
+        - name: GIT_SCRIPT
+          value: |
+            cat $(workspaces.source.path)/touch
+            #git log --oneline
+            #git add .
+            #git commit -m "change sth to something"
+            #git push origin HEAD:master

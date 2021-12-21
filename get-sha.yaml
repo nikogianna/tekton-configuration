@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-git-sha
+spec:
+  steps:
+    - name: get-last-sha-from-workspace 
+      image: bitnami/git 
+      script: |
+        set -xe
+        pwd
+        ls -la
+        cd /workspace/app-dir
+        ls -lsa
+        tag=$(git rev-parse --short=8 --verify HEAD)
+        echo $tag
+        echo $tag > $(workspaces.app-dir.path)/tag2.txt
+        #cd /workspace/config-dir
+        #ls -lsa
+        #echo $tag > tag.txt
+        #cat tag.txt
+  workspaces:
+    - name: app-dir
+    - name: config-dir

@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hello
+spec:
+  steps:
+    - name: dump-directory
+      #image: alpine
+      #image: ubuntu
+      image: bitnami/git 
+      script: |
+        set -xe
+        echo $(params.commit-SHA-digest)
+        tag=$(params.commit-SHA-digest)
+        cd /workspace/app-dir
+        ls -lsa
+        #tag=`cat tag2.txt`
+
+        #tag = $(workspaces.app-dir.path)/tag2.txt
+        cd /workspace/config-dir
+        ls -lsa
+        #sed -i 's/sth/something/g' $(workspaces.config-dir.path)/touch
+        sed -i "s/test:$PARTITION_COLUMN.*/test:$tag/g" $(workspaces.config-dir.path)/knative-service.yaml
+        cat $(workspaces.config-dir.path)/knative-service.yaml
+
+        echo $tag | head -c 8 > shorttag.txt 
+        cat $(workspaces.config-dir.path)/shorttag.txt 
+  params:
+    - name: commit-SHA-digest
+  workspaces:
+    - name: config-dir
+    - name: app-dir

@@ -1,0 +1,15 @@
+piVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-gitops-repo
+spec:
+  params:
+  - name: project-name-prefix
+  - name: environment
+  - name: argo-app-name
+  - name: config-git-url
+  - name: app-git-url
+  workspaces:
+  - name: app-source
+  - name: config-source
+  steps:
